@@ -11,7 +11,6 @@ load_dotenv()
 user = os.getenv("USERNAME")
 password = os.getenv("PASSWORD")
 
-
 app = FastAPI()
 
 
