@@ -1,8 +1,8 @@
-# AWESOME
+# AWESOME YOHO
 
-    email 을 보내고 받고
+email 을 보내고 받고
 
 
-```
-    uvicorn main:app --reload
+```shell
+uvicorn main:app --reload
 ```
