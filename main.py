@@ -31,7 +31,7 @@ def email_test():
     
     eCore = emailCore.EmailCore()
     eCore.connectSession("imap.gmail.com", user, password)
-    eCore.download()
+    eCore.searchEmail()
     eCore.disconnectSession()
 
     return {"Hello": "World"}
