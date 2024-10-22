@@ -15,12 +15,12 @@ class AiCore():
             api_key=key,
         )        
 
-        assistant = self.client.beta.assistants.create(
-            name="Financial Analyst Assistant",
-            instructions="You are an expert financial analyst. Use you knowledge base to answer questions about audited financial statements.",
-            model="gpt-4o",
-            tools=[{"type": "file_search"}],
-        )
+        # assistant = self.client.beta.assistants.create(
+        #     name="Financial Analyst Assistant",
+        #     instructions="You are an expert financial analyst. Use you knowledge base to answer questions about audited financial statements.",
+        #     model="gpt-4o",
+        #     tools=[{"type": "file_search"}],
+        # )
 
     def extractSB(self, filePath):
         text = ''
@@ -97,41 +97,39 @@ def extract_text_from_image(image_path):
 def extract_seller_and_buyer(openai, text):
     print("START extract_seller_and_buyer")
     # GPT 모델을 사용하여 판매자와 구매자 정보 추출
-    prompt = f"Extract the seller and buyer information from the following invoice text:\n\n{text}\n\n"
+    # prompt = f"Extract the seller name and buyer name from the following invoice text:\n\n{text}\n\n If there is seller and buyer data in text, answer should be the following format:\n\nSeller Name:\nBuyer Name:\n\n"
+    
+    prompt = f"Is there seller name and buyer name from the following invoice text:\n\n{text}\n\n Say yes or no."
 
     response = openai.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                        ],
-                    }
-                ],
-            )
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        max_tokens=150,
+        temperature=0.2,
+        n=1,
+        stop=None
+    )
+    print("ANSWER S")
+    print(response.choices[0].message.content)
+    print("ANSWER E")
+    result_text = response.choices[0].message.content.strip()
 
-    # response = openai.chat.completions.create(
-    #     engine="gpt-3.5-turbo",
-    #     prompt=prompt,
-    #     max_tokens=150,
-    #     temperature=0.2,
-    #     n=1,
-    #     stop=["Buyer:"]
-    # )
-    
-    # seller_info = response.choices[0].text.strip()
-    
-    # prompt_buyer = f"{seller_info}\n\nBuyer:"
-    # response_buyer = openai.chat.completions.create(
-    #     engine="gpt-3.5-turbo",
-    #     prompt=prompt_buyer,
-    #     max_tokens=150,
-    #     temperature=0.2,
-    #     n=1,
-    #     stop=["\n"]
-    # )
-    
-    # buyer_info = response_buyer.choices[0].text.strip()
-    
-    return response.choices[0].message.content
+    # Assuming the response text will have something like "Seller: <seller_name>" and "Buyer: <buyer_name>"
+    seller = None
+    buyer = None
+
+    for line in result_text.split("\n"):
+        if "Seller Name:" in line:
+            seller = line.split("Seller Name:")[-1].strip()
+        if "Buyer Name:" in line:
+            buyer = line.split("Buyer Name:")[-1].strip()
+
+    return {
+        "sellerName": seller if seller else "",
+        "buyerName": buyer if buyer else ""
+        }

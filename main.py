@@ -62,6 +62,4 @@ def ai_question(filename: Union[str, None] = None):
     # aCore.makeQ(q)[0].message.content
 
 
-    return {
-        "a": aCore.extractSB(filename)
-        }
+    return aCore.extractSB(filename)
