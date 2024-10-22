@@ -49,6 +49,12 @@ class EmailCore():
             
             # Standard format for fetching email message
             res, msg = self.session.uid('fetch', message, "(RFC822)")  
+            print(res)
+            print(msg)
+            print(type(msg))
+            if msg:
+                print("continue" + str(n))
+                continue
 
             raw_readable = msg[0][1].decode('utf-8')
             email_message = email.message_from_string(raw_readable)
