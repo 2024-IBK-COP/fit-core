@@ -1,5 +1,6 @@
 from email.header import decode_header, make_header
 from email.utils import parseaddr
+from email import utils
 from datetime import datetime
 import smtplib, imaplib, re, csv, email
 from email.mime.text import MIMEText
@@ -30,7 +31,10 @@ class EmailCore():
         self.ID = ID
         id = ID
         pw = PW
-        
+        print("print(id)")
+        print(id)
+        print("print(pw)")
+        print(pw)
         self.imapSession.login(id, pw)
         self.smtpSession.login(id, pw)
 
@@ -47,12 +51,15 @@ class EmailCore():
     
     def replyEmail(self, email_message, content):
         msg = MIMEText(content)
+
         msg["To"] = email_message["From"]
         msg["Subject"] = "Re: " + email_message["Subject"]
         msg["In_Reply-To"] = email_message["Message-Id"]
         msg["References"] = (email_message["References"] or "") + " " + email_message["Message-Id"]
         
+        print("[S]Reply EMAIL TO : " + msg["To"])
         self.smtpSession.sendmail(self.ID, parseaddr(email_message.get('From'))[1], msg.as_string())
+        print("[E]Reply EMAIL TO : " + msg["To"])
 
 
     def searchEmail(self):
@@ -63,22 +70,20 @@ class EmailCore():
         # 각 메일에 대하여 실행
         for n, message in enumerate(messages):
             
-
             res, msg = self.imapSession.fetch(message, "(RFC822)")
 
             raw_readable = msg[0][1].decode('utf-8')
             email_message = email.message_from_string(raw_readable)
-            # 보낸사람
             
+            # 보낸사람
             senderEmail = parseaddr(email_message.get('From'))[1] # [0]=NickName
 
             #senderEmail 이 고객인지 확인
             if senderEmail != 'radiata03@naver.com':
                 
-                print("SEND MAIL S")
-                # self.sendEmail(senderEmail, 'YOU ARE NOT REGISTERED YET', 'PLEASE JOIN CCME SERVICE FIRST. http://www.ccme.co.kr/')
+                
                 self.replyEmail(email_message, 'YOU ARE NOT REGISTERED YET.\nPLEASE JOIN CCME SERVICE FIRST. http://www.ccme.co.kr/')
-                print("SEND MAIL E")
+                
                 self.imapSession.store(message, '+FLAGS', '\\Deleted')
 
                 continue
@@ -101,14 +106,18 @@ class EmailCore():
                     # if fileNm is not None:
                     #     body += fileNm
                     if bool(fileNm):
-                        self.download(fileNm, part)
+                        dateStr = utils.parsedate_to_datetime(email_message.get('date')).strftime("%y%m%d")
+                        newFileNm = dateStr + "_" + senderEmail + "(" + fileNm + ")" + fileNm.split(".")[-1]
+                        self.download(newFileNm, part)
 
             else:
                 body = email_message.get_payload(decode=True).decode('utf-8')
-            # body = body.decode('utf-8')
-            print("CONTENT :\n" + body)
-            print("FILENAME :\n" + str(fileNm))
+            
+
+            # 읽은 메일 삭제
+            #self.imapSession.store(message, '+FLAGS', '\\Deleted')
         
+        # 읽은 메일 삭제
         self.imapSession.expunge()
 
                         
