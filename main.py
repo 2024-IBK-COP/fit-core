@@ -19,7 +19,7 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"Main": "Page"}
 
 
 @app.get("/items/{item_id}")
@@ -36,13 +36,22 @@ def email_test():
 
     return {"Hello": "World"}
 
+@app.get("/email/check")
+def email_check():
+    
+    eCore = emailCore.EmailCore()
+    eCore.connectSession("imap.gmail.com", user, password)
+    eCore.searchEmail()
+    eCore.disconnectSession()
+
+    return {"emailcheck": True}
+
 
 @app.get("/ai/question")
 def ai_question(q: Union[str, None] = None):
     
     aCore = aiCore.AiCore(key)
     # aCore.makeQ(q)[0].message.content
-
 
     return {
         "q" : q,

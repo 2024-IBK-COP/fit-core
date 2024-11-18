@@ -29,7 +29,7 @@ class AiCore():
         if os.path.splitext(filePath)[-1] in ".png.jpg.jpeg" :
             text = extract_text_from_image(filePath)
 
-        print("EXTRACT TEXT : " + text)
+        print("EXTRACT TEXT : \n" + text)
         # seller, buyer = extract_seller_and_buyer(self.client, text)
 
         # return {
@@ -99,7 +99,7 @@ def extract_seller_and_buyer(openai, text):
     # GPT 모델을 사용하여 판매자와 구매자 정보 추출
     # prompt = f"Extract the seller name and buyer name from the following invoice text:\n\n{text}\n\n If there is seller and buyer data in text, answer should be the following format:\n\nSeller Name:\nBuyer Name:\n\n"
     
-    prompt = f"Is there seller name and buyer name from the following invoice text:\n\n{text}\n\n Say yes or no."
+    prompt = f"Is there seller name, buyer name, total price, currency from the following invoice text:\n\n{text}\n\n Say yes or no. And if answer is yes then Extract the seller name, buyer name, total price(only number without currency), currency . Answer should be the following format:\n\nSeller Name:\nBuyer Name:\n\nTotal Price:\n\nCurrency:\n\n"
 
     response = openai.chat.completions.create(
         model="gpt-3.5-turbo",
