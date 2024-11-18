@@ -1,5 +1,6 @@
 from typing import Union
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 import os
 from emailCore import emailCore
@@ -83,5 +84,10 @@ def test():
 
 @app.get("/invoice/{invoice_id}")
 def download(invoice_id: str):
+
+    # 이부분은 Done 으로 수정해야함
+    filename = os.getcwd() + "/attachments/" + invoice_id 
+
     
-    return {"invoice_id": invoice_id}
+
+    return FileResponse(filename)
