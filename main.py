@@ -9,7 +9,7 @@ from aiCore import aiCore
 
 load_dotenv()
 
-user = os.getenv("USERNAME")
+user = os.getenv("EMAIL")
 password = os.getenv("PASSWORD")
 key = os.getenv("OPEN-AI_KEY")
 
