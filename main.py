@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 from emailCore import emailCore
 from aiCore import aiCore
-
+from invoiceCore import invoiceCore
 
 
 load_dotenv()
@@ -72,3 +72,16 @@ def ai_question(filename: Union[str, None] = None):
 
 
     return aCore.extractSB(filename)
+
+@app.get("/test")
+def test():
+    print("START /test")
+    iCore = invoiceCore.InvoiceCore()
+    iCore.login("radiata03@gmail.com", 44121)
+    iCore.create_invoice()
+
+
+@app.get("/invoice/{invoice_id}")
+def download(invoice_id: str):
+    
+    return {"invoice_id": invoice_id}
