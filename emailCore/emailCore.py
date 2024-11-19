@@ -13,10 +13,20 @@ class EmailCore():
         print(self.detach_dir)
         if 'attachments' not in os.listdir(self.detach_dir):
             os.mkdir('attachments')
+        
+        if 'NotYet' not in os.listdir(self.detach_dir + '/attachments'):
+            os.mkdir('attachments/NotYet')
+
+        if 'Done' not in os.listdir(self.detach_dir  + '/attachments'):
+            os.mkdir('attachments/Done')
+
         super().__init__()
 
         self.imapSession = None
         self.smtpSession = None
+
+        self.doneDir = self.detach_dir  + '/attachments/Done'
+        self.notYetDir = self.detach_dir  + '/attachments/NotYet'
 
         self.ID = None
 
@@ -124,7 +134,7 @@ class EmailCore():
 
 
     def download(self, fileNm, part):
-        filePath = os.path.join(self.detach_dir, 'attachments', fileNm)
+        filePath = os.path.join(self.notYetDir, fileNm)
         if not os.path.isfile(filePath) :
             print("FILE DOWNLOAD START")
             fp = open(filePath, 'wb')
