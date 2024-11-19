@@ -81,13 +81,28 @@ def test():
     iCore.login("radiata03@gmail.com", 44121)
     iCore.create_invoice()
 
+@app.get("/invoice/{invoice_id}")
+def download(invoice_id: str):
+
+    # 이부분은 Done 으로 수정해야함
+    filename = os.getcwd() + "/attachments/Done" + invoice_id 
+
+    return FileResponse(filename)
+
+# @app.get("/invoice/save")
+# def download():
+
+#     # 이부분은 Done 으로 수정해야함
+#     filePath_notYet = os.getcwd() + "/attachments/NotYet/"
+#     filePath_done = os.getcwd() + "/attachments/Done/"
+#     for fileNm in os.listdir(filePath_notYet):
+
+#         return FileResponse(filename)
 
 @app.get("/invoice/{invoice_id}")
 def download(invoice_id: str):
 
     # 이부분은 Done 으로 수정해야함
-    filename = os.getcwd() + "/attachments/" + invoice_id 
-
-    
+    filename = os.getcwd() + "/attachments/Done/" + invoice_id 
 
     return FileResponse(filename)
