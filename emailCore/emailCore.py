@@ -4,7 +4,8 @@ from email import utils
 from datetime import datetime
 import smtplib, imaplib, re, csv, email
 from email.mime.text import MIMEText
-import os
+import os, json
+import requests
 from pdf2image import convert_from_path
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,7 +17,7 @@ import pymupdf
 class EmailCore():
     def __init__(self):
         self.detach_dir = os.getcwd()
-        print(self.detach_dir)
+        
         if 'attachments' not in os.listdir(self.detach_dir):
             os.mkdir('attachments')
         
@@ -51,10 +52,7 @@ class EmailCore():
         self.ID = ID
         id = ID
         pw = PW
-        print("print(id)")
-        print(id)
-        print("print(pw)")
-        print(pw)
+        
         self.imapSession.login(id, pw)
         self.smtpSession.login(id, pw)
 
@@ -95,10 +93,6 @@ class EmailCore():
             raw_readable = msg[0][1]
             email_message = email.message_from_bytes(raw_readable)
 
-            print("print(type(email_message)) S")
-            print(type(email_message))
-            print("print(type(email_message)) E")
-
             # 보낸사람
             senderEmail = parseaddr(email_message.get('From'))[1] # [0]=NickName
             # 메일제목
@@ -114,8 +108,9 @@ class EmailCore():
 
             #todo email 로 회원인지 아닌지 확인하는 과정 필요
             #senderEmail 이 고객인지 확인
-            if senderEmail != 'radiata03@naver.com':
-                
+            # if senderEmail != 'radiata03@naver.com':
+            if self.is_user(senderEmail):
+                print(f'is not our user : {senderEmail}')
                 self.replyEmail(email_message, 'YOU ARE NOT REGISTERED YET.\nPLEASE JOIN CCME SERVICE FIRST. http://www.ccme.co.kr/')
                 
                 self.imapSession.store(message, '+FLAGS', '\\Deleted')
@@ -130,22 +125,10 @@ class EmailCore():
             for part in email_message.walk():
                 fileNm = part.get_filename()
 
-                print('print(fileNm) 1S')
-                print(fileNm)
-                print(type(fileNm))
-                print(bool(fileNm))
-                print('print(fileNm) 1E')
-
                 if not bool(fileNm) : continue
 
                 if decode_header(fileNm)[0][1] is not None:
                     fileNm = decode_header(fileNm)[0][0].decode(decode_header(fileNm)[0][1])
-                
-                print('print(fileNm) 2S')
-                print(fileNm)
-                print(type(fileNm))
-                print(bool(fileNm))
-                print('print(fileNm) 2E')
 
                 ctype = part.get_content_type()
                 
@@ -154,6 +137,7 @@ class EmailCore():
                 
 
                 if bool(fileNm):
+                    # if fileNm.split(".")[-1] in ['jpg', 'jpeg', 'png', 'pdf', 'xlsx'] :
                     if fileNm.split(".")[-1] in ['jpg', 'jpeg', 'png', 'pdf'] :
 
                         dateStr = utils.parsedate_to_datetime(email_message.get('date')).strftime("%y%m%d")
@@ -166,22 +150,19 @@ class EmailCore():
                         if fileNm.split(".")[-1] in ['pdf'] :
                             print("isPDF")
                             print(os.path.join(self.notYetDir, newFileNm))
-                            # images = convert_from_path(pdf_path=os.path.join(self.notYetDir, newFileNm))
-                            pdfFile = pymupdf.open(os.path.join(self.orgDir, newFileNm))
 
-                            for page in pdfFile:
-                                print('print(type(page)) S')
-                                print(type(page))
-                                pix = page.get_pixmap()
-                                pix.save(f'{self.notYetDir + os.sep + '.'.join(newFileNm.split(".")[0:-1]) + ".png"}','PNG')
-                                print('print(type(page)) E')
-                                break
-                            
-                            pdfFile.close()
+                            self.pdf_to_png(
+                                os.path.join(self.orgDir, newFileNm),
+                                newFileNm
+                                )
+
                         #excel
                         elif fileNm.split(".")[-1] in ['xlsx'] :
                             
-                            excel_sheet_to_png(os.path.join(self.orgDir, newFileNm), os.path.join(self.notYetDir, newFileNm))
+                            self.excel_sheet_to_png(
+                                os.path.join(self.orgDir, newFileNm), 
+                                os.path.join(self.notYetDir, '.'.join(newFileNm.split(".")[0:-1]) + ".png")
+                                )
 
                         else :
                             self.download(self.notYetDir, newFileNm, part)
@@ -204,6 +185,11 @@ class EmailCore():
 
                         
 
+    def is_user(self, email):
+        response = requests.get("http://34.105.111.197:8080/api/v1/members/status?email="+email)
+        result = json.loads(response.content)
+        
+        return result["data"]["isMember"]
 
     def download(self, filePath, fileNm, part):
         if not os.path.isfile(os.path.join(filePath, fileNm)) :
@@ -212,7 +198,7 @@ class EmailCore():
             fp.write(part.get_payload(decode=True))
             fp.close()
 
-    def excel_sheet_to_png(excel_file, output_png='output.png'):
+    def excel_sheet_to_png(self, excel_file, output_png):
         # 첫 번째 시트 읽기
         df = pd.read_excel(excel_file, sheet_name=0)  # sheet_name=0은 첫 번째 시트를 읽습니다.
         
@@ -236,3 +222,16 @@ class EmailCore():
         plt.savefig(output_png, dpi=300, bbox_inches='tight')
         plt.close()
         print(f"PNG 파일이 저장되었습니다: {output_png}")
+
+
+    def pdf_to_png(self, pdfFilePath, newFileNm):
+        pdfFile = pymupdf.open(os.path.join(self.orgDir, pdfFilePath))
+
+        for page in pdfFile:
+            
+            pix = page.get_pixmap()
+            pix.save(f'{self.notYetDir + os.sep + '.'.join(newFileNm.split(".")[0:-1]) + ".png"}','PNG')
+            
+            break
+        
+        pdfFile.close()

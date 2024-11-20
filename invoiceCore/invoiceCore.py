@@ -59,8 +59,14 @@ class InvoiceCore():
     
     def create_invoice(self):
         print("create_invoice Start")
-        requests.post("http://34.105.111.197:8080/api/v1/invoices", headers=self.headerObj, json=self.invoiceObj)
-        print("create_invoice Done")
+        response = requests.post("http://34.105.111.197:8080/api/v1/invoices", headers=self.headerObj, json=self.invoiceObj)
+        return response
+        
+
+    # def create_invoice(self, invoice):
+    #     print("create_invoice Start")
+    #     requests.post("http://34.105.111.197:8080/api/v1/invoices", headers=self.headerObj, json=self.invoiceObj)
+    #     print("create_invoice Done")
 
 
     def login(self, email, authCode):

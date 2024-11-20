@@ -1,6 +1,6 @@
 from openai import OpenAI
 from dotenv import load_dotenv
-import os
+import os, platform
 import pytesseract
 from pdf2image import convert_from_path
 from PIL import Image
@@ -88,6 +88,10 @@ def extract_text_from_pdf(pdf_path):
     return text
 
 def extract_text_from_image(image_path):
+
+    if 'Window' in platform.system():
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
     print("START extract_text_from_image")
     # 이미지 파일에서 텍스트 추출
     image = Image.open(image_path)
@@ -122,14 +126,22 @@ def extract_seller_and_buyer(openai, text):
     # Assuming the response text will have something like "Seller: <seller_name>" and "Buyer: <buyer_name>"
     seller = None
     buyer = None
+    currency = None
+    totalPrice = None
 
     for line in result_text.split("\n"):
         if "Seller Name:" in line:
             seller = line.split("Seller Name:")[-1].strip()
-        if "Buyer Name:" in line:
+        elif "Buyer Name:" in line:
             buyer = line.split("Buyer Name:")[-1].strip()
+        elif "Currency:" in line:
+            currency = line.split("Currency:")[-1].strip()
+        elif "Total Price:" in line:
+            totalPrice = line.split("Total Price:")[-1].strip()
 
     return {
         "sellerName": seller if seller else "",
-        "buyerName": buyer if buyer else ""
+        "buyerName": buyer if buyer else "",
+        "currency" : currency if currency else "",
+        "totalPrice" : totalPrice if totalPrice else ""
         }
