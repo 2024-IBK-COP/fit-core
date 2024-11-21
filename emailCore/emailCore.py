@@ -109,7 +109,7 @@ class EmailCore():
             #todo email 로 회원인지 아닌지 확인하는 과정 필요
             #senderEmail 이 고객인지 확인
             # if senderEmail != 'radiata03@naver.com':
-            if self.is_user(senderEmail):
+            if not self.is_user(senderEmail):
                 print(f'is not our user : {senderEmail}')
                 self.replyEmail(email_message, 'YOU ARE NOT REGISTERED YET.\nPLEASE JOIN CCME SERVICE FIRST. http://www.ccme.co.kr/')
                 

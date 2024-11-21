@@ -7,7 +7,7 @@ import os
 from emailCore import emailCore
 from aiCore import aiCore
 from invoiceCore import invoiceCore
-
+import shutil
 
 load_dotenv()
 
@@ -94,25 +94,33 @@ def download(invoice_id: str):
 def save_invoices():
 
     # 이부분은 Done 으로 수정해야함
-    filePath_notYet = os.path.join(os.getcwd() ,"attachments","NotYet")
-    filePath_done = os.path.join(os.getcwd() ,"attachments","Done")
+    notYetDir = os.path.join(os.getcwd() ,"attachments","NotYet")
+    doneDir = os.path.join(os.getcwd() ,"attachments","Done")
     
     
     aCore = aiCore.AiCore(key)
 
-    for fileNm in os.listdir(filePath_notYet):
+    for fileNm in os.listdir(notYetDir):
         
         iCore = invoiceCore.InvoiceCore()
         iCore.login(fileNm.split("_")[1], 44121)
 
-        result = aCore.extractSB(os.path.join(filePath_notYet,fileNm))
-        iCore.invoiceObj["invoiceDate"] = datetime.datetime.strptime(fileNm.split("_")[0], "%y%m%d")
+        print("AI PROCESS START")
+        result = aCore.extractSB(os.path.join(notYetDir,fileNm))
+        print(f"AI RESULT\n{result}")
+        print("AI PROCESS END")
+        iCore.invoiceObj["invoiceDate"] = datetime.datetime.strptime(fileNm.split("_")[0], "%y%m%d").strftime("%Y-%m-%d")
         iCore.invoiceObj["senderName"] = result["sellerName"]
         iCore.invoiceObj["recipientName"] = result["buyerName"]
         iCore.invoiceObj["currency"] = result["currency"]
         iCore.invoiceObj["totalAmount"] = result["totalPrice"]
 
-        iCore.create_invoice()
+        result = iCore.create_invoice()
+
+        if(result["code"] == "00"):
+            shutil.move(os.path.join(notYetDir,fileNm), os.path.join(doneDir,result["data"] +"."+ fileNm.split(".")[-1]))
+        else:
+            print("createInvoice Fail")
 
     return "YAHO"
 
@@ -121,13 +129,13 @@ def save_invoices():
 def save_invoices_fileNm(fileNm:str):
 
     # 이부분은 Done 으로 수정해야함
-    filePath_notYet = os.path.join(os.getcwd() ,"attachments","NotYet")
-    filePath_done = os.path.join(os.getcwd() ,"attachments","Done")
+    notYetDir = os.path.join(os.getcwd() ,"attachments","NotYet")
+    doneDir = os.path.join(os.getcwd() ,"attachments","Done")
 
     
     print(fileNm)
-    print(filePath_notYet)
-    print(os.path.join(filePath_notYet,fileNm))
+    print(notYetDir)
+    print(os.path.join(notYetDir,fileNm))
     
     aCore = aiCore.AiCore(key)
 
@@ -135,7 +143,7 @@ def save_invoices_fileNm(fileNm:str):
     iCore.login(fileNm.split("_")[1], 44121)
 
     print("AI PROCESS START")
-    result = aCore.extractSB(os.path.join(filePath_notYet,fileNm))
+    result = aCore.extractSB(os.path.join(notYetDir,fileNm))
     print(f"AI RESULT\n{result}")
     print("AI PROCESS END")
     iCore.invoiceObj["invoiceDate"] = datetime.datetime.strptime(fileNm.split("_")[0], "%y%m%d").strftime("%Y-%m-%d")
@@ -144,7 +152,15 @@ def save_invoices_fileNm(fileNm:str):
     iCore.invoiceObj["currency"] = result["currency"]
     iCore.invoiceObj["totalAmount"] = result["totalPrice"]
 
-    return iCore.create_invoice()
+    result = iCore.create_invoice()
+
+    if(result["code"] == "00"):
+        shutil.move(os.path.join(notYetDir,fileNm), os.path.join(doneDir,result["data"] +"."+ fileNm.split(".")[-1]))
+    else:
+        print("createInvoice Fail")
+
+
+    return result
 
 @app.get("/invoice/{invoice_id}")
 def download(invoice_id: str):

@@ -60,7 +60,7 @@ class InvoiceCore():
     def create_invoice(self):
         print("create_invoice Start")
         response = requests.post("http://34.105.111.197:8080/api/v1/invoices", headers=self.headerObj, json=self.invoiceObj)
-        return response
+        return json.loads(response.content)
         
 
     # def create_invoice(self, invoice):
@@ -73,8 +73,6 @@ class InvoiceCore():
         self.loginObj["email"] = email
         self.loginObj["authCode"] = authCode
         response = requests.post("http://34.105.111.197:8080/api/v1/verify", json=self.loginObj)
-
-        print(response.content)
 
         result = json.loads(response.content)
 
