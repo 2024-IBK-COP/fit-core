@@ -1,8 +1,8 @@
-from email.header import decode_header, make_header
+from email.header import decode_header
 from email.utils import parseaddr
 from email import utils
 from datetime import datetime
-import smtplib, imaplib, re, csv, email
+import smtplib, imaplib, re, email
 from email.mime.text import MIMEText
 import os, json, shutil
 import requests
@@ -10,7 +10,6 @@ from pdf2image import convert_from_path
 import pandas as pd
 import matplotlib.pyplot as plt
 import pymupdf
-from xlsx2html import xlsx2html
 import pdfkit
 
 
@@ -167,16 +166,16 @@ class EmailCore():
                             #     )
 
                         #excel
-                        elif fileNm.split(".")[-1] in ['xlsx'] :
-                            print("isXlsx")
-                            # self.excel_sheet_to_png(
-                            #     os.path.join(self.orgDir, newFileNm), 
-                            #     os.path.join(self.notYetDir, '.'.join(newFileNm.split(".")[0:-1]) + ".png")
-                            #     )
-                            self.excel_to_pdf(
-                                os.path.join(self.orgDir, newFileNm), 
-                                os.path.join(self.notYetDir, '.'.join(newFileNm.split(".")[0:-1]) + ".pdf")
-                            )
+                        # elif fileNm.split(".")[-1] in ['xlsx'] :
+                        #     print("isXlsx")
+                        #     # self.excel_sheet_to_png(
+                        #     #     os.path.join(self.orgDir, newFileNm), 
+                        #     #     os.path.join(self.notYetDir, '.'.join(newFileNm.split(".")[0:-1]) + ".png")
+                        #     #     )
+                        #     self.excel_to_pdf(
+                        #         os.path.join(self.orgDir, newFileNm), 
+                        #         os.path.join(self.notYetDir, '.'.join(newFileNm.split(".")[0:-1]) + ".pdf")
+                        #     )
 
                         else :
                             self.download(self.notYetDir, newFileNm, part)
@@ -238,15 +237,15 @@ class EmailCore():
         print(f"PNG 파일이 저장되었습니다: {output_png}")
 
 
-    def excel_to_pdf(self, input_file, output_file):
-        # Excel을 HTML로 변환
-        temp_html = os.path.join(self.notYetDir, "temp.html")
-        with open(temp_html, "w", encoding="utf-8") as f:
-            xlsx2html(input_file, f)
+    # def excel_to_pdf(self, input_file, output_file):
+    #     # Excel을 HTML로 변환
+    #     temp_html = os.path.join(self.notYetDir, "temp.html")
+    #     with open(temp_html, "w", encoding="utf-8") as f:
+    #         xlsx2html(input_file, f)
 
-        # HTML을 PDF로 변환
-        pdfkit.from_file(temp_html, output_file)
-        print(f"PDF 저장 완료: {output_file}")
+    #     # HTML을 PDF로 변환
+    #     pdfkit.from_file(temp_html, output_file)
+    #     print(f"PDF 저장 완료: {output_file}")
 
         
 
