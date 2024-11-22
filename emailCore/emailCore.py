@@ -230,7 +230,7 @@ class EmailCore():
         for page in pdfFile:
             
             pix = page.get_pixmap()
-            pix.save(f'{self.notYetDir + os.sep + '.'.join(newFileNm.split(".")[0:-1]) + ".png"}','PNG')
+            pix.save(f'{self.notYetDir + os.sep + ".".join(newFileNm.split(".")[0:-1]) + ".png"}','PNG')
             
             break
         
