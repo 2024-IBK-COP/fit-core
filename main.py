@@ -90,42 +90,51 @@ def download(invoice_id: str):
 
     return FileResponse(filename)
 
-@app.get("/invoice/save")
+@app.get("/invoice/all/save")
 def save_invoices():
-
+    print('Start /invoice/save')
     # 이부분은 Done 으로 수정해야함
     notYetDir = os.path.join(os.getcwd() ,"attachments","NotYet")
     doneDir = os.path.join(os.getcwd() ,"attachments","Done")
-    
+    failDir = os.path.join(os.getcwd() ,"attachments","Fail")
     
     aCore = aiCore.AiCore(key)
 
     for fileNm in os.listdir(notYetDir):
-        
-        iCore = invoiceCore.InvoiceCore()
-        iCore.login(fileNm.split("_")[1], 44121)
+        try:
+            print(f'{os.path.join(notYetDir,fileNm)} Start')
+            iCore = invoiceCore.InvoiceCore()
+            iCore.login(fileNm.split("_")[1], 44121)
 
-        print("AI PROCESS START")
-        result = aCore.extractSB(os.path.join(notYetDir,fileNm))
-        print(f"AI RESULT\n{result}")
-        print("AI PROCESS END")
-        iCore.invoiceObj["invoiceDate"] = datetime.datetime.strptime(fileNm.split("_")[0], "%y%m%d").strftime("%Y-%m-%d")
-        iCore.invoiceObj["senderName"] = result["sellerName"]
-        iCore.invoiceObj["recipientName"] = result["buyerName"]
-        iCore.invoiceObj["currency"] = result["currency"]
-        iCore.invoiceObj["totalAmount"] = result["totalPrice"]
+            print("AI PROCESS START")
+            result = aCore.extractSB(os.path.join(notYetDir,fileNm))
+            print(f"AI RESULT\n{result}")
+            print("AI PROCESS END")
 
-        result = iCore.create_invoice()
+            if  result["sellerName"] & result["buyerName"] & result["currency"] & result["totalPrice"] :
+                iCore.invoiceObj["invoiceDate"] = datetime.datetime.strptime(fileNm.split("_")[0], "%y%m%d").strftime("%Y-%m-%d")
+                iCore.invoiceObj["senderName"] = result["sellerName"]
+                iCore.invoiceObj["recipientName"] = result["buyerName"]
+                iCore.invoiceObj["currency"] = result["currency"]
+                iCore.invoiceObj["totalAmount"] = result["totalPrice"]
 
-        if(result["code"] == "00"):
-            shutil.move(os.path.join(notYetDir,fileNm), os.path.join(doneDir,result["data"] +"."+ fileNm.split(".")[-1]))
-        else:
-            print("createInvoice Fail")
+                result = iCore.create_invoice()
+
+                if(result["code"] == "00"):
+                    shutil.move(os.path.join(notYetDir,fileNm), os.path.join(doneDir,result["data"] +"."+ fileNm.split(".")[-1]))
+                else:
+                    print("createInvoice Fail")
+            else:
+                shutil.move(os.path.join(notYetDir,fileNm), os.path.join(failDir,fileNm))
+                print("invalid invoice")
+        except Exception as e:
+            print(f'error during invoice saving {e}')
+            continue
 
     return "YAHO"
 
 #TEMP
-@app.get("/invoice/save/{fileNm}")
+@app.get("/invoice/save/test/{fileNm}")
 def save_invoices_fileNm(fileNm:str):
 
     # 이부분은 Done 으로 수정해야함
