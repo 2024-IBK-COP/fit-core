@@ -65,7 +65,7 @@ def ai_question(filename: Union[str, None] = None):
     
     print("START /ai/question/filename")
 
-    filename = os.getcwd() + "/attachments/" + filename 
+    filename = os.getcwd() + "/attachments" + os.sep + filename 
 
     print(filename)
 
@@ -81,6 +81,7 @@ def test():
     iCore = invoiceCore.InvoiceCore()
     iCore.login("radiata03@gmail.com", 44121)
     iCore.create_invoice()
+
 
 @app.get("/invoice/{invoice_id}")
 def download(invoice_id: str):
@@ -168,5 +169,14 @@ def save_invoices_fileNm(fileNm:str):
     else:
         print("createInvoice Fail")
 
-
     return result
+
+@app.get("/invoice/{invoice_id}")
+def download(invoice_id: str):
+
+    # 이부분은 Done 으로 수정해야함
+    filename = os.path.join(os.getcwd() ,"attachments","Done", invoice_id )
+    
+    print(filename)
+
+    return FileResponse(filename)
