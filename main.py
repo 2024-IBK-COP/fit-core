@@ -86,7 +86,7 @@ def test():
 def download(invoice_id: str):
 
     # 이부분은 Done 으로 수정해야함
-    filename = os.getcwd() + "/attachments/Done" + invoice_id 
+    filename = os.getcwd() +os.sep+ "attachments" +os.sep+ "Done" +os.sep+ invoice_id 
 
     return FileResponse(filename)
 
@@ -170,11 +170,3 @@ def save_invoices_fileNm(fileNm:str):
 
 
     return result
-
-@app.get("/invoice/{invoice_id}")
-def download(invoice_id: str):
-
-    # 이부분은 Done 으로 수정해야함
-    filename = os.getcwd() + "/attachments/Done/" + invoice_id 
-
-    return FileResponse(filename)
