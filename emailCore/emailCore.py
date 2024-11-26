@@ -1,17 +1,15 @@
-from email.header import decode_header, make_header
+from email.header import decode_header
 from email.utils import parseaddr
 from email import utils
 from datetime import datetime
-import smtplib, imaplib, re, csv, email
+import smtplib, imaplib, re, email
 from email.mime.text import MIMEText
-import os, json
+import os, json, shutil
 import requests
 from pdf2image import convert_from_path
 import pandas as pd
 import matplotlib.pyplot as plt
-
 import pymupdf
-
 
 
 class EmailCore():
@@ -29,6 +27,9 @@ class EmailCore():
 
         if 'Done' not in os.listdir(os.path.join(self.detach_dir , 'attachments')):
             os.mkdir(os.path.join(self.detach_dir , 'attachments','Done'))
+
+        if 'Fail' not in os.listdir(os.path.join(self.detach_dir , 'attachments')):
+            os.mkdir(os.path.join(self.detach_dir , 'attachments','Fail'))
 
         super().__init__()
 
@@ -124,26 +125,30 @@ class EmailCore():
             # if email_message.is_multipart():
             for part in email_message.walk():
                 fileNm = part.get_filename()
+                print(f'filename : {fileNm}')
+                # if not bool(fileNm) : continue
 
-                if not bool(fileNm) : continue
-
-                if decode_header(fileNm)[0][1] is not None:
-                    fileNm = decode_header(fileNm)[0][0].decode(decode_header(fileNm)[0][1])
-
-                ctype = part.get_content_type()
                 
-                if ctype == 'text/plain':
-                    body += part.get_payload(decode=True).decode(part.get_content_charset)  # decode
+
+                # ctype = part.get_content_type()
+                
+                # if ctype == 'text/plain':
+                #     body += part.get_payload(decode=True).decode(part.get_content_charset)  # decode
                 
 
                 if bool(fileNm):
+                    
+                    if decode_header(fileNm)[0][1] is not None:
+                        fileNm = decode_header(fileNm)[0][0].decode(decode_header(fileNm)[0][1])
+                        print(f'decode filename : {fileNm}')
+
                     # if fileNm.split(".")[-1] in ['jpg', 'jpeg', 'png', 'pdf', 'xlsx'] :
-                    if fileNm.split(".")[-1] in ['jpg', 'jpeg', 'png', 'pdf'] :
+                    if fileNm.split(".")[-1] in ['jpg', 'jpeg', 'png', 'pdf'] : # xlsx 뺌
 
                         dateStr = utils.parsedate_to_datetime(email_message.get('date')).strftime("%y%m%d")
                         newFileNm = dateStr + "_" + senderEmail + "_" + '.'.join(fileNm.split(".")[0:-1]) + "." + fileNm.split(".")[-1]
 
-                        # orDir 에 다운로드
+                        # orgDir 에 다운로드
                         self.download(self.orgDir, newFileNm, part)
 
                         # pdf
@@ -152,19 +157,26 @@ class EmailCore():
                             print(os.path.join(self.notYetDir, newFileNm))
 
                             self.download(self.notYetDir, newFileNm, part)
+
                             # self.pdf_to_png(
                             #     os.path.join(self.orgDir, newFileNm),
                             #     newFileNm
                             #     )
+
                             self.replyEmail(email_message, 'Invoice is saved successfully. Please check with https://www.ccme.co.kr')
 
+
                         #excel
-                        elif fileNm.split(".")[-1] in ['xlsx'] :
-                            
-                            self.excel_sheet_to_png(
-                                os.path.join(self.orgDir, newFileNm), 
-                                os.path.join(self.notYetDir, '.'.join(newFileNm.split(".")[0:-1]) + ".png")
-                                )
+                        # elif fileNm.split(".")[-1] in ['xlsx'] :
+                        #     print("isXlsx")
+                        #     # self.excel_sheet_to_png(
+                        #     #     os.path.join(self.orgDir, newFileNm), 
+                        #     #     os.path.join(self.notYetDir, '.'.join(newFileNm.split(".")[0:-1]) + ".png")
+                        #     #     )
+                        #     self.excel_to_pdf(
+                        #         os.path.join(self.orgDir, newFileNm), 
+                        #         os.path.join(self.notYetDir, '.'.join(newFileNm.split(".")[0:-1]) + ".pdf")
+                        #     )
 
                         else :
                             self.download(self.notYetDir, newFileNm, part)
@@ -226,6 +238,18 @@ class EmailCore():
         plt.close()
         print(f"PNG 파일이 저장되었습니다: {output_png}")
 
+
+    # def excel_to_pdf(self, input_file, output_file):
+    #     # Excel을 HTML로 변환
+    #     temp_html = os.path.join(self.notYetDir, "temp.html")
+    #     with open(temp_html, "w", encoding="utf-8") as f:
+    #         xlsx2html(input_file, f)
+
+    #     # HTML을 PDF로 변환
+    #     pdfkit.from_file(temp_html, output_file)
+    #     print(f"PDF 저장 완료: {output_file}")
+
+        
 
     def pdf_to_png(self, pdfFilePath, newFileNm):
         pdfFile = pymupdf.open(os.path.join(self.orgDir, pdfFilePath))
