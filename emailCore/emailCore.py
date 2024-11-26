@@ -151,10 +151,12 @@ class EmailCore():
                             print("isPDF")
                             print(os.path.join(self.notYetDir, newFileNm))
 
-                            self.pdf_to_png(
-                                os.path.join(self.orgDir, newFileNm),
-                                newFileNm
-                                )
+                            self.download(self.notYetDir, newFileNm, part)
+                            # self.pdf_to_png(
+                            #     os.path.join(self.orgDir, newFileNm),
+                            #     newFileNm
+                            #     )
+                            self.replyEmail(email_message, 'Invoice is saved successfully. Please check with https://www.ccme.co.kr')
 
                         #excel
                         elif fileNm.split(".")[-1] in ['xlsx'] :
@@ -166,6 +168,7 @@ class EmailCore():
 
                         else :
                             self.download(self.notYetDir, newFileNm, part)
+                            self.replyEmail(email_message, 'Invoice is saved successfully. Please check with https://www.ccme.co.kr')
 
                             # todo pdf 파일이 1장 이상인경우
                             # if len(images) == 1 :
