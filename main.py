@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 import datetime
-import os
+import os, traceback
 from emailCore import emailCore
 from aiCore import aiCore
 from invoiceCore import invoiceCore
@@ -114,47 +114,11 @@ def save_invoices():
                 shutil.move(os.path.join(notYetDir,fileNm), os.path.join(failDir,fileNm))
                 print("invalid invoice")
         except Exception as e:
-            print(f'error during invoice saving {e}')
+            print(f'error during invoice saving :  {e}')
+            traceback.print_exc()
             continue
 
     return "YAHO"
-
-#TEMP
-@app.get("/invoice/save/test/{fileNm}")
-def save_invoices_fileNm(fileNm:str):
-
-    # 이부분은 Done 으로 수정해야함
-    notYetDir = os.path.join(os.getcwd() ,"attachments","NotYet")
-    doneDir = os.path.join(os.getcwd() ,"attachments","Done")
-
-    
-    print(fileNm)
-    print(notYetDir)
-    print(os.path.join(notYetDir,fileNm))
-    
-    aCore = aiCore.AiCore(key)
-
-    iCore = invoiceCore.InvoiceCore()
-    iCore.login(fileNm.split("_")[1], 44121)
-
-    print("AI PROCESS START")
-    result = aCore.extractSB(os.path.join(notYetDir,fileNm))
-    print(f"AI RESULT\n{result}")
-    print("AI PROCESS END")
-    iCore.invoiceObj["invoiceDate"] = datetime.datetime.strptime(fileNm.split("_")[0], "%y%m%d").strftime("%Y-%m-%d")
-    iCore.invoiceObj["senderName"] = result["sellerName"]
-    iCore.invoiceObj["recipientName"] = result["buyerName"]
-    iCore.invoiceObj["currency"] = result["currency"]
-    iCore.invoiceObj["totalAmount"] = result["totalPrice"]
-
-    result = iCore.create_invoice()
-
-    if(result["code"] == "00"):
-        shutil.move(os.path.join(notYetDir,fileNm), os.path.join(doneDir,result["data"] +"."+ fileNm.split(".")[-1]))
-    else:
-        print("createInvoice Fail")
-
-    return result
 
 @app.get("/invoice/{invoice_id}")
 def download(invoice_id: str):
