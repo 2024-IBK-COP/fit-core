@@ -28,16 +28,6 @@ def read_root():
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
-@app.get("/email/test")
-def email_test():
-    
-    eCore = emailCore.EmailCore()
-    eCore.connectSession("imap.gmail.com", user, password)
-    eCore.searchEmail()
-    eCore.disconnectSession()
-
-    return {"Hello": "World"}
-
 @app.get("/email/check")
 def email_check():
     
@@ -82,14 +72,6 @@ def test():
     iCore.login("radiata03@gmail.com", 44121)
     iCore.create_invoice()
 
-
-@app.get("/invoice/{invoice_id}")
-def download(invoice_id: str):
-
-    # 이부분은 Done 으로 수정해야함
-    filename = os.getcwd() +os.sep+ "attachments" +os.sep+ "Done" +os.sep+ invoice_id 
-
-    return FileResponse(filename)
 
 @app.get("/invoice/all/save")
 def save_invoices():
