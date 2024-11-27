@@ -44,26 +44,17 @@ class EmailCore():
 
 
     def connectSession(self, URL, ID, PW):
-        print(1)
         self.imapSession = imaplib.IMAP4_SSL(URL)
-        print(2)
-        self.smtpSession = smtplib.SMTP(URL)
+        self.smtpSession = smtplib.SMTP(URL, '587')
 
-        print(3)
         self.smtpSession.ehlo()
-        print(4)
         self.smtpSession.starttls()
         
-        print(5)
         self.ID = ID
-        print(6)
         id = ID
-        print(7)
         pw = PW
         
-        print(8)
         self.imapSession.login(id, pw)
-        print(9)
         self.smtpSession.login(id, pw)
 
     def disconnectSession(self):
