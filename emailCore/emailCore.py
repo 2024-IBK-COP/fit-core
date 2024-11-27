@@ -193,7 +193,7 @@ class EmailCore():
             
 
             # 읽은 메일 삭제
-            #self.imapSession.store(message, '+FLAGS', '\\Deleted')
+            self.imapSession.store(message, '+FLAGS', '\\Deleted')
         
         # 읽은 메일 삭제
         self.imapSession.expunge()
