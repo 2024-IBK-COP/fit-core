@@ -32,8 +32,11 @@ def read_item(item_id: int, q: Union[str, None] = None):
 def email_check():
     print('@app.get("/email/check") START')
     eCore = emailCore.EmailCore()
+    print('eCore.connectSession("imap.gmail.com", user, password) START')
     eCore.connectSession("imap.gmail.com", user, password)
+    print('eCore.searchEmail() START')
     eCore.searchEmail()
+    print('eCore.disconnectSession() START')
     eCore.disconnectSession()
 
     return {"emailcheck": True}
