@@ -30,7 +30,7 @@ def read_item(item_id: int, q: Union[str, None] = None):
 
 @app.get("/email/check")
 def email_check():
-    
+    print('@app.get("/email/check") START')
     eCore = emailCore.EmailCore()
     eCore.connectSession("imap.gmail.com", user, password)
     eCore.searchEmail()
