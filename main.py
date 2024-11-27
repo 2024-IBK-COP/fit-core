@@ -97,7 +97,7 @@ def save_invoices():
             print(f"AI RESULT\n{result}")
             print("AI PROCESS END")
 
-            if  result["sellerName"] & result["buyerName"] & result["currency"] & result["totalPrice"] :
+            if  result["sellerName"] and result["buyerName"] and result["currency"] and result["totalPrice"] :
                 iCore.invoiceObj["invoiceDate"] = datetime.datetime.strptime(fileNm.split("_")[0], "%y%m%d").strftime("%Y-%m-%d")
                 iCore.invoiceObj["senderName"] = result["sellerName"]
                 iCore.invoiceObj["recipientName"] = result["buyerName"]
